@@ -439,9 +439,9 @@ function resiKolo(grf :: Graf, args :: Dict)
 	end
 	#samo ispis
 	U1 = Symbolics.Sym{Symbolics.Num}(Symbol("U1"))
-	for i in jednacine
-		i = Symbolics.substitute(i.lhs, Dict([U1 => 0])) ~ Symbolics.substitute(i.rhs, Dict([U1 => 0]))
-	 	println(i)
+	for (i, val) in enumerate(jednacine)
+		jednacine[i] = Symbolics.Equation(Symbolics.substitute(val.lhs, Dict([U1 => 0])),
+										  Symbolics.substitute(val.rhs, Dict([U1 => 0])))
 	end
 
 	print("Simboli: ")
@@ -452,10 +452,17 @@ function resiKolo(grf :: Graf, args :: Dict)
 
 
 
+	# TODO: Да ли треба if - else
 	if omega == ""
 		res = Symbolics.solve_for(jednacine, simboli_vec)
+		for (i, val) in enumerate(res)
+			res[i] = Symbolics.simplify(Symbolics.substitute(val, smene), expand=true)
+		end
 	else
 		res = Symbolics.solve_for(jednacine, simboli_vec)
+		for (i, val) in enumerate(res)
+			res[i] = Symbolics.simplify(Symbolics.substitute(val, smene), expand=true)
+		end
 		#x = SymPy.symbols("x")
 		#r = Array{Num}()
 		# r = Vector{Sym}()
@@ -503,8 +510,9 @@ graf = JuliaCAP.noviGraf()
 @Symbolics.variables Ug Rp
 Ug = Symbolics.Sym{Symbolics.Num}(Symbol("Ug"))
 Rp = Symbolics.Sym{Symbolics.Num}(Symbol("Rp"))
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], ["Ug"]))
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [2], [1], ["Rp"]))
+JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [3], [1], ["Ug"]))
+JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [2], [1], ["R1"]))
+JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R2", [3], [2], ["R2"]))
 
 #Test2
 # JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], [5.]))
