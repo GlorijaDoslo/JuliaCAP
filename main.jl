@@ -101,6 +101,10 @@ function resiKolo(grf :: Graf, args :: Dict)
 	end
 	simboli = Set{Symbolics.Sym{Num}}()	#namerno je Set da ne bi ubacio duplikate
 	#jednacine_ispis = Vector{Equation}()
+	# smene = Dict{Symbolics.Sym{Num},
+	# 			 SymbolicUtils.Div{Num, Int64, SymbolicUtils.Sym{Num, Nothing}, Nothing}}
+	smene = Dict()
+	id = 0
 
 	for g in grf.grane
 		if g.tip == R
@@ -113,14 +117,22 @@ function resiKolo(grf :: Graf, args :: Dict)
 			if g.cvor2[1] != 1
 				push!(simboli, U2)
 			end
-			if g.param isa Vector{String}
-				I = (U1 - U2) / Symbolics.Sym{Num}(Symbol(g.param[1]))
-			else
-				I = (U1 - U2) / g.param[1]
-			end
 
-			t[g.cvor1[1]] += I
-			t[g.cvor2[1]] -= I
+			if g.param isa Vector{String}
+				G = Symbolics.Sym{Num}(Symbol("G" * string(id)))
+				id += 1
+				push!(smene, G => 1 / Symbolics.Sym{Num}(Symbol(g.param[1])))
+				I = (U1 - U2) * G
+				t[g.cvor1[1]] += I
+				t[g.cvor2[1]] -= I
+			elseif g.param isa Symbolics.Sym{Num}
+				G = Symbolics.Sym{Num}(Symbol("G" * string(id)))
+				id += 1
+				push!(smene, G => 1 / g.param) # g.param je onda simbol, ako nije niz
+				I = (U1 - U2) * G
+				t[g.cvor1[1]] += I
+				t[g.cvor2[1]] -= I
+			end
 
 			# println(g)
 			# println(I)
@@ -427,7 +439,7 @@ function resiKolo(grf :: Graf, args :: Dict)
 	end
 	#samo ispis
 	U1 = Symbolics.Sym{Symbolics.Num}(Symbol("U1"))
-	for i in jednacine[1:end]
+	for i in jednacine
 		i = Symbolics.substitute(i.lhs, Dict([U1 => 0])) ~ Symbolics.substitute(i.rhs, Dict([U1 => 0]))
 	 	println(i)
 	end
@@ -441,9 +453,9 @@ function resiKolo(grf :: Graf, args :: Dict)
 
 
 	if omega == ""
-		res = Symbolics.solve_for(jednacine[1:end], simboli_vec)
+		res = Symbolics.solve_for(jednacine, simboli_vec)
 	else
-		res = Symbolics.solve_for(jednacine[1:end], simboli_vec)
+		res = Symbolics.solve_for(jednacine, simboli_vec)
 		#x = SymPy.symbols("x")
 		#r = Array{Num}()
 		# r = Vector{Sym}()
@@ -491,8 +503,8 @@ graf = JuliaCAP.noviGraf()
 @Symbolics.variables Ug Rp
 Ug = Symbolics.Sym{Symbolics.Num}(Symbol("Ug"))
 Rp = Symbolics.Sym{Symbolics.Num}(Symbol("Rp"))
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], [Ug]))
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [2], [1], [Rp]))
+JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], ["Ug"]))
+JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [2], [1], ["Rp"]))
 
 #Test2
 # JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], [5.]))
@@ -561,12 +573,7 @@ using Printf
 arg = Dict{String, Any}("w" => "w", "replacement" => "10")
 
 for i in JuliaCAP.resiKolo(graf, arg)
-	if (occursin("U", string(i[1])))
-		#show(Base.stdout, Base.Multimedia.MIME("text/plain"), i[2])
-		@printf("%s = %s V\n", i[1], i[2])
-	else
-		@printf("%s = %s A\n", i[1], i[2])
-	end
+	@printf("%s = %s\n", i[1], i[2])
 end
 # TODO
 #NAPRAVITI LEP ISPIS JEDNACINA
