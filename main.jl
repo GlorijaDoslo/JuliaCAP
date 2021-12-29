@@ -155,7 +155,7 @@ function resiKolo(grf :: Graf, args :: Dict)
 			push!(grf.jednacine_grane, Eq)
 
 		elseif g.tip == VCVS
-			#g.param is amplification
+			#g.param is amplification(voltage gain)
 			I1 = Symbolics.Sym{Num}(Symbol("I" * g.ime))
 			push!(simboli, I1)
 			U1 = Symbolics.Sym{Num}(Symbol("U" * string(g.cvor1[1])))
@@ -183,7 +183,7 @@ function resiKolo(grf :: Graf, args :: Dict)
 			t[g.cvor2[2]] -= g.param[1] * (U1 - U2)
 
 		elseif g.tip == CCCS
-			#g.param is amplification
+			#g.param is amplification(current gain)
 			I1 = Symbolics.Sym{Num}(Symbol("I" * g.ime))
 			push!(simboli, I1)
 			U1 = Symbolics.Sym{Num}(Symbol("U" * string(g.cvor1[1])))
@@ -410,7 +410,7 @@ function resiKolo(grf :: Graf, args :: Dict)
 	push!(jednacine, t)
 
 	append!(jednacine, grf.jednacine_grane)
-	append!(jednacine, grf.jednacine_cvorovi[1:end])
+	append!(jednacine, grf.jednacine_cvorovi[1:(end - 1)])
 
 	simboli_vec = Vector{Symbolics.Sym{Num}}()
 
@@ -435,11 +435,11 @@ function resiKolo(grf :: Graf, args :: Dict)
 		res = Symbolics.solve_for(jednacine[1:length(simboli_vec)], simboli_vec)
 		#x = SymPy.symbols("x")
 		#r = Array{Num}()
-		r = Vector{Sym}()
-		for i in simboli_vec
-			e = SymPy.symbols(string(i))
-			push!(r, e)
-		end
+		# r = Vector{Sym}()
+		# for i in simboli_vec
+		# 	e = SymPy.symbols(string(i))
+		# 	push!(r, e)
+		# end
 		# for i in jednacine[1:end]
 		# 	push!(r, i)
 		# end
@@ -458,9 +458,9 @@ function resiKolo(grf :: Graf, args :: Dict)
 	# end
 
 	ret = Vector{Tuple{Symbolics.Sym{Num}, Num}}()
-	# for i in zip(simboli_vec, res)
-	# 	push!(ret, i)
-	# end
+	for i in zip(simboli_vec, res)
+		push!(ret, i)
+	end
 
 	return ret
 
@@ -470,10 +470,72 @@ end
 end
 graf = JuliaCAP.noviGraf()
 
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], [3]))
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [2], [3], [100]))
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R2", [3], [4], [50]))
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.C, "C1", [4], [1], [5], ["U0"]))
+
+
+#Test1
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [4], [1], [5.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [4], [3], [150.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R2", [3], [2], [50.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R3", [2], [1], [300.]))
+@Symbolics.variables Ug Rp
+Ug = Symbolics.Sym{Num}(Symbol("Ug"))
+Rp = Symbolics.Sym{Num}(Symbol("Rp"))
+JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], [Ug]))
+JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [2], [1], [Rp]))
+
+#Test2
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], [5.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [2], [3], [514.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R2", [3], [4], [123.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R3", [4], [5], [300.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R4", [5], [1], [154.]))
+
+#Test3
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [5], [1], [5.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [5], [2], [150.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R3", [2], [1], [50.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R4", [2], [3], [200.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R5", [4], [3], [50.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R6", [3], [1], [100.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.VCVS, "VCVS1", [2, 1], [4, 1], [1]))
+
+#Test4
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [6], [1], [2.5]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V2", [2], [1], [2.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R5", [1], [4], [10000.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R6", [2], [3], [10000.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R7", [3], [6], [2780.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R8", [4], [5], [2780.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.opAmp, "opAmp1", [3, 4], [5]))
+
+#Test6
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], [3.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [2], [3], [50.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R2", [3], [4], [100.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.C, "C1", [4], [1], [5.], [2.]))
+
+#Isto test6 samo sto su parametri nekih elemenata zamenjeni opstim simbolima
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], [3]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [2], [3], [50]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R2", [3], [4], ["R2"]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.C, "C1", [4], [1], ["C"], ["U0"]))
+
+#Test7 (ERROR : isLinear)
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], [3.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [2], [3], [50.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R2", [3], [4], [100.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.L, "L1", [4], [1], [5.], [2.]))
+
+#Test9 (ne radi)
+
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], [5.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [4], [5], [10000.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R2", [5], [6], [10000.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R3", [2], [3], [10000.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.C, "C1", [3], [4], [16e-9], [3.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.opAmp, "opAmp1", [3, 1], [6]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.opAmp, "opAmp2", [1, 5], [4]))
+
 #JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R4", [3], [4], [200.]))
 #JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R5", [5], [4], [50.]))
 #JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R6", [4], [1], [100.]))
@@ -506,17 +568,17 @@ end
 #x=Symbolics.Sym{Num}(Symbol("x"))
 #Symbolics.@syms x :: Symbolics.Sym{Num}
 # x = Symbolics.Sym{Num}(Symbol("x"))
-R = Symbolics.Sym{Num}(Symbol("R"))
-function f!(F,x)
-	F[1]=x[1]^2-25
-	F[2]=x[2]^2 - 9
-end
-function g!(F,x)
-	x[1]^2 - 25
-end
+# R = Symbolics.Sym{Num}(Symbol("R"))
+# function f!(F,x)
+# 	F[1]=x[1]^2-25
+# 	F[2]=x[2]^2 - 9
+# end
+# function g!(F,x)
+# 	x[1]^2 - 25
+# end
 
-res = nlsolve(g!, [1.0, 1.0])
-print(res.zero)
+# res = nlsolve(g!, [1.0, 1.0])
+# print(res.zero)
 # using SymPy
 # for i in vec
 # 	print(SymPy.solveset(x^2 - 25, x))
@@ -540,3 +602,8 @@ print(res.zero)
 # push!(equa, "x^2 - 25 ~ 0")
 # push!(equa, y - x ~ 0)
 # sol = solve(equa, sim)
+# using Symbolics
+# x = Symbolics.Sym{Num}(Symbol("x"))
+# y = Symbolics.Sym{Num}(Symbol("x"))
+# a = Symbolics.Sym{Num}(Symbol("x"))
+# Symbolics.solve_for([x + y ~ a, x - y ~ 0], [x, y])
