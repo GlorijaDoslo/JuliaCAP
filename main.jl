@@ -119,8 +119,8 @@ function resiKolo(grf :: Graf, args :: Dict)
 			if g.param isa Vector{String}
 				push!(smene, G => 1 / Symbolics.Sym{Num}(Symbol(g.param[1])))
 			else
-				#push!(smene, G => 1 / g.param)
-				I = (U1 - U2) / g.param[1]
+				push!(smene, G => 1 / g.param[1])
+				#I = (U1 - U2) / g.param[1]
 			end
 
 			t[g.cvor1[1]] += I
@@ -278,8 +278,7 @@ function resiKolo(grf :: Graf, args :: Dict)
 			if g.param isa Vector{String}
 				push!(smene, G => 1 / Symbolics.Sym{Num}(Symbol(g.param[1])))
 			else
-				#push!(smene, G => 1 / g.param)
-				I = (U3 - U4) / g.param[1]
+				push!(smene, G => 1 / g.param[1])
 			end	
 			#t[g.cvor1[1]] += (U3 - U4) / g.param[1]
 			#t[g.cvor1[2]] -= (U3 - U4) / g.param[1]
@@ -292,11 +291,15 @@ function resiKolo(grf :: Graf, args :: Dict)
 			Eq = U1 - U2 ~ 0
 			push!(grf.jednacine_grane, Eq)
 
-		elseif g.tip == L											############### PROBLEM
+		elseif g.tip == L
 			U1 = Symbolics.Sym{Num}(Symbol("U" * string(g.cvor1[1])))
-			push!(simboli, U1)
+			if g.cvor1[1] != 1
+				push!(simboli, U1)
+			end
 			U2 = Symbolics.Sym{Num}(Symbol("U" * string(g.cvor2[1])))
-			push!(simboli, U2)
+			if g.cvor2[1] != 1
+				push!(simboli, U2)
+			end
 			#I = 0
 			S1 = Symbolics.Sym{Num}(Symbol("S" * string(id)))
 			id += 1
@@ -512,14 +515,27 @@ function resiKolo(grf :: Graf, args :: Dict)
 				push!(grf.jednacine_grane, Eq)
 			end
 
-		elseif g.tip == Z				########################Problem
+		elseif g.tip == Z
 			U1 = Symbolics.Sym{Num}(Symbol("U" * string(g.cvor1[1])))
-			push!(simboli, U1)
+			if g.cvor1[1] != 1
+				push!(simboli, U1)
+			end
 			U2 = Symbolics.Sym{Num}(Symbol("U" * string(g.cvor1[2])))
-			push!(simboli, U2)
+			if g.cvor1[2] != 1
+				push!(simboli, U2)
+			end
 
-			t[g.cvor1[1]] += (U1 - U2) / g.param[1]
-			t[g.cvor2[1]] -= (U1 - U2) / g.param[1]
+			G = Symbolics.Sym{Num}(Symbol("G" * string(id)))
+			id += 1
+			#provera da li je simbol ili broj
+			if g.param isa Vector{String}
+				push!(smene, G => 1 / Symbolics.Sym{Num}(Symbol(g.param[1])))
+			else
+				push!(smene, G => 1 / g.param[1])
+			end
+
+			t[g.cvor1[1]] += (U1 - U2) * G
+			t[g.cvor2[1]] -= (U1 - U2) * G
 
 		elseif g.tip == Y
 			U1 = Symbolics.Sym{Num}(Symbol("U" * string(g.cvor1[1])))
@@ -546,50 +562,90 @@ function resiKolo(grf :: Graf, args :: Dict)
 			I2 = Symbolics.Sym{Num}(Symbol("I" * g.ime * string(g.cvor2[1])))
 			push!(simboli, I2)
 			U1 = Symbolics.Sym{Num}(Symbol("U" * string(g.cvor1[1])))
-			push!(simboli, U1)
+			if g.cvor1[1] != 1
+				push!(simboli, U1)
+			end
 			U2 = Symbolics.Sym{Num}(Symbol("U" * string(g.cvor1[2])))
-			push!(simboli, U2)
+			if g.cvor1[2] != 1
+				push!(simboli, U2)
+			end
 			U3 = Symbolics.Sym{Num}(Symbol("U" * string(g.cvor2[1])))
-			push!(simboli, U3)
+			if g.cvor2[1] != 1
+				push!(simboli, U3)
+			end
 			U4 = Symbolics.Sym{Num}(Symbol("U" * string(g.cvor2[2])))
-			push!(simboli, U4)
+			if g.cvor2[2] != 1
+				push!(simboli, U4)
+			end
 
 			t[g.cvor1[1]] += I1
 			t[g.cvor1[2]] -= I1
 			t[g.cvor2[1]] -= I2
 			t[g.cvor2[2]] += I2
+			G = Symbolics.Sym{Num}(Symbol("G" * string(id)))
+			id += 1
+
 			#globalna konstanta im = j
-			Eq = U1 - U2 - (cos(g.param[2]) * (U3 - U4) + j * g.param[1] * sin(g.param[2]) * I2) ~ 0
-			push!(grf.jednacine_grane, Eq)
+			if g.param isa Vector{String}
+				par1 = Symbolics.Sym{Num}(Symbol(g.param[1]))
+				par2 = Symbolics.Sym{Num}(Symbol(g.param[2]))
+				push!(smene, G => 1 / par1)
+				Eq = U1 - U2 - (cos(par2) * (U3 - U4) + j * par1 * sin(par2) * I2) ~ 0
+				push!(grf.jednacine_grane, Eq)
 
-			Eq = I1 - (j * (1/g.param[1]) * sin(g.param[2]) * (U3 - U4) + cos(g.param[2]) * I2) ~ 0
-			push!(grf.jednacine_grane, Eq)
+				Eq = I1 - (j * G * sin(par2) * (U3 - U4) + cos(par2) * I2) ~ 0
+				push!(grf.jednacine_grane, Eq)
+			else
+				push!(smene, G => 1 / g.param[1])
+				Eq = U1 - U2 - (cos(g.param[2]) * (U3 - U4) + j * g.param[1] * sin(g.param[2]) * I2) ~ 0
+				push!(grf.jednacine_grane, Eq)
 
-		elseif (g.tip == T && time_domain == false)				#####################   NEDOVRSENO
+				Eq = I1 - (j * G * sin(g.param[2]) * (U3 - U4) + cos(g.param[2]) * I2) ~ 0
+				push!(grf.jednacine_grane, Eq)
+			end
+
+		elseif (g.tip == T && time_domain == false)
 			#Zc, tau -> g.param
 			I1 = Symbolics.Sym{Num}(Symbol("I" * g.ime * string(g.cvor1[1])))
 			push!(simboli, I1)
 			I2 = Symbolics.Sym{Num}(Symbol("I" * g.ime * string(g.cvor2[1])))
 			push!(simboli, I2)
 			U1 = Symbolics.Sym{Num}(Symbol("U" * string(g.cvor1[1])))
-			push!(simboli, U1)
+			if g.cvor1[1] != 1
+				push!(simboli, U1)
+			end
 			U2 = Symbolics.Sym{Num}(Symbol("U" * string(g.cvor1[2])))
-			push!(simboli, U2)
+			if g.cvor1[2] != 1
+				push!(simboli, U2)
+			end
 			U3 = Symbolics.Sym{Num}(Symbol("U" * string(g.cvor2[1])))
-			push!(simboli, U3)
+			if g.cvor2[1] != 1
+				push!(simboli, U3)
+			end
 			U4 = Symbolics.Sym{Num}(Symbol("U" * string(g.cvor2[2])))
-			push!(simboli, U4)
+			if g.cvor2[2] != 1
+				push!(simboli, U4)
+			end
 
 			t[g.cvor1[1]] += I1
 			t[g.cvor1[2]] -= I1
 			t[g.cvor2[1]] += I2
 			t[g.cvor2[2]] -= I2
+			if g.param isa Vector{String}
+				par1 = Symbolics.Sym{Num}(Symbol(g.param[1]))
+				par2 = Symbolics.Sym{Num}(Symbol(g.param[2]))
+				Eq = U1 - U2 - (par1 * I1 + par1 * I2 * exp(-par2 * s) + (U3 - U4) * exp(-par2 * s)) ~ 0
+				push!(grf.jednacine_grane, Eq)
 
-			Eq = U1 - U2 - (g.param[1] * I1 + g.param[1] * I2 * exp(-g.param[2] * s) + (U3 - U4) * exp(-g.param[2] * s)) ~ 0
-			push!(grf.jednacine_grane, Eq)
-
-			Eq = U3 - U4 - (g.param[1] * I2 + g.param[1] * I1 * exp(-g.param[2] * s) + (U1 - U2) * exp(-g.param[2] * s)) ~ 0
-			push!(grf.jednacine_grane, Eq)
+				Eq = U3 - U4 - (par1 * I2 + par1 * I1 * exp(-par2 * s) + (U1 - U2) * exp(-par2 * s)) ~ 0
+				push!(grf.jednacine_grane, Eq)
+			else
+				Eq = U1 - U2 - (g.param[1] * I1 + g.param[1] * I2 * exp(-g.param[2] * s) + (U3 - U4) * exp(-g.param[2] * s)) ~ 0
+				push!(grf.jednacine_grane, Eq)
+	
+				Eq = U3 - U4 - (g.param[1] * I2 + g.param[1] * I1 * exp(-g.param[2] * s) + (U1 - U2) * exp(-g.param[2] * s)) ~ 0
+				push!(grf.jednacine_grane, Eq)
+			end
 		end
 	end
 
@@ -603,7 +659,7 @@ function resiKolo(grf :: Graf, args :: Dict)
 	# push!(jednacine, t)
 
 	append!(jednacine, grf.jednacine_grane)
-	append!(jednacine, grf.jednacine_cvorovi[1:(end - 1)])
+	append!(jednacine, grf.jednacine_cvorovi[1:(end)])
 
 	simboli_vec = Vector{Symbolics.Sym{Num}}()
 
@@ -612,9 +668,9 @@ function resiKolo(grf :: Graf, args :: Dict)
 	# 	println(i)
 	# end
 
-	for i in jednacine[1:(end - 1)]
-		println(i)
-	end
+	# for i in jednacine[1:(end - 1)]
+	# 	println(i)
+	# end
 
 	for i in simboli
 		push!(simboli_vec, i)
@@ -624,6 +680,11 @@ function resiKolo(grf :: Graf, args :: Dict)
 	for (i, val) in enumerate(jednacine)
 		jednacine[i] = Symbolics.Equation(Symbolics.substitute(val.lhs, Dict([U1 => 0])),
 										  Symbolics.substitute(val.rhs, Dict([U1 => 0])))
+		#jednacine[i] = Symbolics.simplify(jednacine[i], expand=true)
+	end
+
+	for i in jednacine[1:(end)]
+		println(i)
 	end
 
 	print("Simboli: ")
@@ -636,19 +697,22 @@ function resiKolo(grf :: Graf, args :: Dict)
 
 	# TODO: Да ли треба if - else
 	if omega == ""
-		res = Symbolics.solve_for(jednacine, simboli_vec)
+		res = Symbolics.solve_for(jednacine, simboli_vec, simplify = true)
 		for (i, val) in enumerate(res)
 			res[i] = Symbolics.simplify(Symbolics.substitute(val, smene), expand=true)
 		end
 	else
-		res = Symbolics.solve_for(jednacine, simboli_vec)
+		res = Symbolics.solve_for(jednacine, simboli_vec, simplify = true)
 		for (i, val) in enumerate(res)
-			val = Symbolics.substitute(val, smene)
-			res[i] = Symbolics.simplify(val, expand=true)
+			res[i] = Symbolics.simplify(Symbolics.substitute(val, smene), expand=true)
 		end
 	end
 	# for j in res
 	# 	j = round(j, digits=3)
+	# end
+	# println("Ponovo ispisi jednacine")
+	# for i in jednacine[1:(end)]
+	# 	println(i)
 	# end
 
 	ret = Vector{Tuple{Symbolics.Sym{Num}, Num}}()
@@ -710,12 +774,12 @@ graf = JuliaCAP.noviGraf()
 # JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.VCCS, "VCCS1", [2, 1], [4, 1], ["g"]))#1
 
 #Test4
-# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [6], [1], ["V1"]))#2.5
-# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V2", [2], [1], ["V2"]))#2
-# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R5", [1], [4], ["R5"]))#10000
-# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R6", [2], [3], ["R6"]))#10000
-# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R7", [3], [6], ["R7"]))#2780
-# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R8", [4], [5], ["R8"]))#2780
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [6], [1], [2.5]))#2.5
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V2", [2], [1], [2]))#2
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R5", [1], [4], [10000]))#10000
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R6", [2], [3], [10000]))#10000
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R7", [3], [6], [2780]))#2780
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R8", [4], [5], [2780]))#2780
 # JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.opAmp, "opAmp1", [3, 4], [5]))
 
 #Test6
@@ -730,20 +794,45 @@ graf = JuliaCAP.noviGraf()
 # JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R2", [3], [4], ["R2"]))
 # JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.C, "C1", [4], [1], ["C"], ["U0"]))
 
-#Test7 (ERROR : isLinear)
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], [3.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [2], [3], [50.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.C, "C1", [3], [1], [5.], [2.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.L, "L1", [4], [1], [5.], [2.]))
+
+# Pokrenula i preko 30 min ga pustila da se izvrsava... 
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [5], [1], [3.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [5], [2], [50.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.C, "C1", [3], [1], [5.], [2.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.C, "C2", [4], [1], [5.], [2.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.VCCS,  "VCCS1", [2, 1], [3, 1], [1]))#a
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.VCCS,  "VCCS2", [3, 1], [3, 1], [1]))#a
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.VCCS,  "VCCS3", [3, 1], [4, 1], [1]))#a
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.VCCS,  "VCCS4", [4, 1], [1, 3], [1]))#a
+
+JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], [3.]))
+JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [5], [1], [50.]))
+JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R3", [6], [3], [50.]))
+JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R4", [3], [4], [50.]))
+JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R5", [2], [4], [50.]))
+JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.opAmp, "opAmp1", [2, 5], [6]))
+JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.opAmp, "opAmp2", [2, 3], [4]))
+JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.C, "C2", [5], [6], [5.], [2.]))
+
+#Test7
 # JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], [3.]))
 # JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [2], [3], [50.]))
 # JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R2", [3], [4], [100.]))
 # JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.L, "L1", [4], [1], [5.], [2.]))
 
-#Test9 (ne radi) -> i salecx je izbacio za jednu promenljivu losu vrednost(nije to)
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], ["V1"]))#5
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [4], [5], ["R1"]))#10000
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R2", [5], [6], ["R2"]))#10000
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R3", [2], [3], ["R3"]))#10000
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.C, "C1", [3], [4], [16], ["Uo"]))#3
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.opAmp, "opAmp1", [3, 1], [6]))
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.opAmp, "opAmp2", [1, 5], [4]))
+#Test9 (ne radi)
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], ["V1"]))#5
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [4], [5], ["R1"]))#10000
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R2", [5], [6], ["R2"]))#10000
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R3", [2], [3], ["R3"]))#10000
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.C, "C1", [3], [4], ["C1"], ["Uo"]))#3
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.opAmp, "opAmp1", [3, 1], [6]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.opAmp, "opAmp2", [1, 5], [4]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R4", [6], [1], ["R4"]))
 
 #JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R4", [3], [4], [200.]))
 #JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R5", [5], [4], [50.]))
