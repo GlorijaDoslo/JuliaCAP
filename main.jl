@@ -659,7 +659,7 @@ function resiKolo(grf :: Graf, args :: Dict)
 	# push!(jednacine, t)
 
 	append!(jednacine, grf.jednacine_grane)
-	append!(jednacine, grf.jednacine_cvorovi[1:(end)])
+	append!(jednacine, grf.jednacine_cvorovi[2:(end)])
 
 	simboli_vec = Vector{Symbolics.Sym{Num}}()
 
@@ -694,7 +694,7 @@ function resiKolo(grf :: Graf, args :: Dict)
 	 println()
 
 
-
+	
 	# TODO: Да ли треба if - else
 	if omega == ""
 		res = Symbolics.solve_for(jednacine, simboli_vec, simplify = true)
@@ -703,9 +703,11 @@ function resiKolo(grf :: Graf, args :: Dict)
 		end
 	else
 		res = Symbolics.solve_for(jednacine, simboli_vec, simplify = true)
-		for (i, val) in enumerate(res)
-			res[i] = Symbolics.simplify(Symbolics.substitute(val, smene), expand=true)
-		end
+		 for (i, val) in enumerate(res)
+			res[i] = Symbolics.substitute(val, smene)
+		 	#res[i] = Symbolics.simplify(val, expand=true)
+		 end
+		#println("Stigao do ovde")
 	end
 	# for j in res
 	# 	j = round(j, digits=3)
@@ -756,6 +758,29 @@ graf = JuliaCAP.noviGraf()
 # JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [3], [1], ["Ug"]))
 # JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [2], [1], ["R1"]))
 # JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R2", [3], [2], ["R2"]))
+
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], ["Ug"]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [2], [1], ["R"]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R2", [2], [1], ["R"]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R3", [2], [1], ["R"]))
+
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], [3]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [2], [1], [100]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R2", [2], [1], [100]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R3", [2], [1], [100]))
+
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], [2]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [2], [3], [50]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R2", [3], [1], [50]))
+
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], ["Ug"]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [2], [3], ["R"]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R2", [3], [1], ["R"]))
+
+JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [3], ["Ug"]))
+JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [2], [1], ["R1"]))
+JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R2", [3], [1], ["R2"]))
+
 
 #Test2
 # JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], [5.])) #5
@@ -809,14 +834,14 @@ graf = JuliaCAP.noviGraf()
 # JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.VCCS,  "VCCS3", [3, 1], [4, 1], [1]))#a
 # JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.VCCS,  "VCCS4", [4, 1], [1, 3], [1]))#a
 
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], [3.]))
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [5], [1], [50.]))
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R3", [6], [3], [50.]))
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R4", [3], [4], [50.]))
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R5", [2], [4], [50.]))
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.opAmp, "opAmp1", [2, 5], [6]))
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.opAmp, "opAmp2", [2, 3], [4]))
-JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.C, "C2", [5], [6], [5.], [2.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], [3.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [5], [1], [50.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R3", [6], [3], [50.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R4", [3], [4], [50.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R5", [2], [4], [50.]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.opAmp, "opAmp1", [2, 5], [6]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.opAmp, "opAmp2", [2, 3], [4]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.C, "C2", [5], [6], [5.], [2.]))
 
 #Test7
 # JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], [3.]))
