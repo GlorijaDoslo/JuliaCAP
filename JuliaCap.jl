@@ -1,6 +1,6 @@
 module JuliaCAP
 
-export Grana, Graf, noviGraf, dodajGranu, resiKolo, ispisi_rezultate
+export Grana, Graf, noviGraf, dodajGranu, resiKolo, ispisi_rezultate, ispisi_specifican_rezultat
 export TipGrane, R, Vg, Ig, opAmp, VCVS, VCCS, CCCS, CCVS, L, C, IdealT, InductiveT, ABCD, Z, Y, T
 
 using Symbolics

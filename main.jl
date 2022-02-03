@@ -57,11 +57,11 @@ graf = noviGraf()
 
 
 # radi
-# dodajGranu(graf, Grana(Vg, "V1", [2], [1], ["V1"])) #5
-# dodajGranu(graf, Grana(R, "R1", [2], [3], ["R1"]))#514
-# dodajGranu(graf, Grana(R, "R2", [3], [4], ["R2"]))#123
-# dodajGranu(graf, Grana(R, "R3", [4], [5], ["R3"]))#300
-# dodajGranu(graf, Grana(R, "R4", [5], [1], ["R4"]))#154
+dodajGranu(graf, Grana(Vg, "V1", [2], [1], ["V1"])) #5
+dodajGranu(graf, Grana(R, "R1", [2], [3], ["R1"]))#514
+dodajGranu(graf, Grana(R, "R2", [3], [4], ["R2"]))#123
+dodajGranu(graf, Grana(R, "R3", [4], [5], ["R3"]))#300
+dodajGranu(graf, Grana(R, "R4", [5], [1], ["R4"]))#154
 
 #Test3 (ne radi kad dodas simplify, ni kad se dodaju dva simplify-a)
 # ali radi bez simplify-a
@@ -211,14 +211,14 @@ graf = noviGraf()
 # dodajGranu(graf, Grana(opAmp, "opAmp1", [3, 4], [5]))
 
 # Test 12 (radi bez substitute, ali sa njim ne radi), u Linuxu ne radi, ne radi na win 7
-dodajGranu(graf, Grana(Ig, "Ig1", [1], [2], ["Ig1"]))#5
-dodajGranu(graf, Grana(Ig, "Ig2", [4], [3], ["Ig2"]))#5
-dodajGranu(graf, Grana(R, "R1", [5], [6], ["R1"]))#10000
-dodajGranu(graf, Grana(R, "R2", [4], [1], ["R2"]))#10000
-dodajGranu(graf, Grana(R, "R3", [2], [5], ["R3"]))#10000
-dodajGranu(graf, Grana(R, "R4", [6], [3], ["R4"]))#10000
-dodajGranu(graf, Grana(opAmp, "opAmp1", [2, 6], [3]))
-dodajGranu(graf, Grana(opAmp, "opAmp2", [4, 6], [5]))
+# dodajGranu(graf, Grana(Ig, "Ig1", [1], [2], ["Ig1"]))#5
+# dodajGranu(graf, Grana(Ig, "Ig2", [4], [3], ["Ig2"]))#5
+# dodajGranu(graf, Grana(R, "R1", [5], [6], ["R1"]))#10000
+# dodajGranu(graf, Grana(R, "R2", [4], [1], ["R2"]))#10000
+# dodajGranu(graf, Grana(R, "R3", [2], [5], ["R3"]))#10000
+# dodajGranu(graf, Grana(R, "R4", [6], [3], ["R4"]))#10000
+# dodajGranu(graf, Grana(opAmp, "opAmp1", [2, 6], [3]))
+# dodajGranu(graf, Grana(opAmp, "opAmp2", [4, 6], [5]))
 
 # Isto test 12 radi bez substitute, ali sa njim ne radi
 # dodajGranu(graf, Grana(Ig, "Ig1", [1], [2], [5.]))#5
@@ -257,54 +257,14 @@ dodajGranu(graf, Grana(opAmp, "opAmp2", [4, 6], [5]))
 arg = Dict{String, Any}("w" => "w", "replacement" => "10")
 rezultat = resiKolo(graf, arg)
 ispisi_rezultate(rezultat)
+using Latexify
+for (k, v) in rezultat
+	println(latexify(k ~ v))
+end
 #println()
-#JuliaCAP.ispisi_specifican_rezultat(rezultat, "U2")
+# ispisi_specifican_rezultat(rezultat, "U2")
 
 # TODO
 #NAPRAVITI LEP ISPIS JEDNACINA
 #ZAOKRUZITI VREDNOSTI I OBRISATI -0
 #PROVERITI GRESKE
-
-
-#x=Symbolics.Sym{Num}(Symbol("x"))
-#Symbolics.@syms x :: Symbolics.Sym{Num}
-# x = Symbolics.Sym{Num}(Symbol("x"))
-# R = Symbolics.Sym{Num}(Symbol("R"))
-# function f!(F,x)
-# 	F[1]=x[1]^2-25
-# 	F[2]=x[2]^2 - 9
-# end
-# function g!(F,x)
-# 	x[1]^2 - 25
-# end
-
-# res = nlsolve(g!, [1.0, 1.0])
-# print(res.zero)
-# using SymPy
-# for i in vec
-# 	print(SymPy.solveset(x^2 - 25, x))
-# end
-# x=symbols("x")
-# y=symbols("y")
-# print(SymPy.solveset((x^2 - 25 + y, y), [x, y]))
-# a,b=symbols("a b")
-# nonlinsolve(a^2 - 25, a)
-# x = SymPy.symbols("x")
-# y = SymPy.symbols("y")
-# sim = [x, y]
-#z = SymPy.symbols("z")
-#SymPy.solve((SymPy.Eq(3*x+7*y, 0), SymPy.Eq(4*x-2*y, 0)), (x, y))
-#x, y = @vars x y
-#dist = [x^2 - 25]
-#equations = [Eq(dist, 0)]
-# eq = Vector{Equation}()
-# push!(eq, x^2 - 25 ~ 0)
-# equa = Vector{Sym}()
-# push!(equa, "x^2 - 25 ~ 0")
-# push!(equa, y - x ~ 0)
-# sol = solve(equa, sim)
-# using Symbolics
-# x = Symbolics.Sym{Num}(Symbol("x"))
-# y = Symbolics.Sym{Num}(Symbol("x"))
-# a = Symbolics.Sym{Num}(Symbol("x"))
-# Symbolics.solve_for([x + y ~ a, x - y ~ 0], [x, y])
