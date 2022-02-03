@@ -258,7 +258,7 @@ arg = Dict{String, Any}("w" => "w", "replacement" => "10")
 rezultat = resiKolo(graf, arg)
 ispisi_rezultate(rezultat)
 #println()
-#JuliaCAP.ispisi_specifican_rezultat(rezultat, "U2")
+# ispisi_specifican_rezultat(rezultat, "U2")
 
 # TODO
 #NAPRAVITI LEP ISPIS JEDNACINA
