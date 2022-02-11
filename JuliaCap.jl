@@ -429,7 +429,7 @@ function resiKolo(grf :: Graf, args :: Dict)
 
 		elseif g.tip == InductiveT
 			# L1, L2, L12, I01, I02
-			
+
 			if isempty(g.struja_napon)
 				push!(g.struja_napon, 0)
 				if length(g.struja_napon) == 1
@@ -707,7 +707,7 @@ function resiKolo(grf :: Graf, args :: Dict)
 										  Symbolics.substitute(val.rhs, Dict([U1 => 0])))
 		#jednacine[i] = Symbolics.simplify(jednacine[i], expand=true)
 	end
-	
+
 	res2 = Vector{Any}()
 	ret = Vector{Tuple{Symbolics.Sym{Num}, Num}}()
 
@@ -721,10 +721,10 @@ function resiKolo(grf :: Graf, args :: Dict)
 	D = Symbolics.det(a)
 
 	if isequal(D, 0)
-		println("Resenje ne postoji!") 
+		println("Resenje ne postoji!")
 		return ret
 	end
-	
+
 	# for i in jednacine[1:(end)]
 	# 	println(Symbolics.substitute(i, smene))
 	# 	#println(i)
@@ -737,7 +737,7 @@ function resiKolo(grf :: Graf, args :: Dict)
 	# println()
 
 	res = Symbolics.solve_for(jednacine, simboli_vec)
-	if isempty(res) 
+	if isempty(res)
 		problem = true
 	end
 
