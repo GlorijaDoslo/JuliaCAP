@@ -257,10 +257,14 @@ dodajGranu(graf, Grana(R, "R4", [5], [1], ["R4"]))#154
 arg = Dict{String, Any}("w" => "w", "replacement" => "10")
 rezultat = resiKolo(graf, arg)
 ispisi_rezultate(rezultat)
-using Latexify
+using SymbolicUtils
 for (k, v) in rezultat
-	println(latexify(k ~ v))
+	println(k ~ SymbolicUtils.simplify(v))
 end
+# using Latexify
+# for (k, v) in rezultat
+# 	println(latexify(k ~ v))
+# end
 #println()
 # ispisi_specifican_rezultat(rezultat, "U2")
 

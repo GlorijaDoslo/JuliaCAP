@@ -76,8 +76,8 @@ function resiKolo(grf :: Graf, args :: Dict)
 	end
 	grf.jednacine_grane = Vector{Equation}()
 
-	 ######### Reading omega and replacement ##########
-	 omega = ""
+	######### Reading omega and replacement ##########
+	omega = ""
 	for a in keys(args)	#lista kljuceva
 		if a == "w" || a == "omega"
 			omega = args[a]
@@ -351,7 +351,7 @@ function resiKolo(grf :: Graf, args :: Dict)
 			end
 			#U = 0
 			# if (time_domain == false)
-			# 	push!(g.struja_napon, 0)
+			 	push!(g.struja_napon, 0)
 			# end
 			if (g.struja_napon isa Vector{String} && g.param isa Vector{String})
 				par = Symbolics.Sym{Num}(Symbol(g.param[1]))
@@ -694,7 +694,7 @@ function resiKolo(grf :: Graf, args :: Dict)
 	for i in simboli
 	 	print(i, " ")
 	end
-	 println()
+	println()
 
 
 
@@ -715,7 +715,7 @@ function resiKolo(grf :: Graf, args :: Dict)
 			#println(res)
 		#catch
 			#println(smene)
-			#println("To complicated")
+			#println("Too complicated")
 		 for (i, val) in enumerate(res2)
 			#SymPy.simplify(res[i]);
 
