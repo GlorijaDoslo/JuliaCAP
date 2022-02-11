@@ -1,3 +1,6 @@
+
+#import .JuliaCAP
+module Test
 include("JuliaCap.jl")
 using .JuliaCAP
 
@@ -23,10 +26,10 @@ graf = noviGraf()
 # dodajGranu(graf, Grana(R, "R1", [2], [1], ["R1"]))
 # dodajGranu(graf, Grana(R, "R2", [3], [2], ["R2"]))
 
-# dodajGranu(graf, Grana(Vg, "V1", [2], [1], ["Ug"]))
-# dodajGranu(graf, Grana(R, "R1", [2], [1], ["R"]))
-# dodajGranu(graf, Grana(R, "R2", [2], [1], ["R"]))
-# dodajGranu(graf, Grana(R, "R3", [2], [1], ["R"]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [2], [1], ["Ug"]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [2], [1], ["R"]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R2", [2], [1], ["R"]))
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R3", [2], [1], ["R"]))
 
 # dodajGranu(graf, Grana(Vg, "V1", [2], [1], [3]))
 # dodajGranu(graf, Grana(R, "R1", [2], [1], [100]))
@@ -57,21 +60,21 @@ graf = noviGraf()
 
 
 # radi
-dodajGranu(graf, Grana(Vg, "V1", [2], [1], ["V1"])) #5
-dodajGranu(graf, Grana(R, "R1", [2], [3], ["R1"]))#514
-dodajGranu(graf, Grana(R, "R2", [3], [4], ["R2"]))#123
-dodajGranu(graf, Grana(R, "R3", [4], [5], ["R3"]))#300
-dodajGranu(graf, Grana(R, "R4", [5], [1], ["R4"]))#154
+# dodajGranu(graf, Grana(Vg, "V1", [2], [1], ["V1"])) #5
+# dodajGranu(graf, Grana(R, "R1", [2], [3], ["R1"]))#514
+# dodajGranu(graf, Grana(R, "R2", [3], [4], ["R2"]))#123
+# dodajGranu(graf, Grana(R, "R3", [4], [5], ["R3"]))#300
+# dodajGranu(graf, Grana(R, "R4", [5], [1], ["R4"]))#154
 
 #Test3 (ne radi kad dodas simplify, ni kad se dodaju dva simplify-a)
 # ali radi bez simplify-a
-# dodajGranu(graf, Grana(Vg, "V1", [5], [1], ["V1"]))#5
-# dodajGranu(graf, Grana(R, "R1", [5], [2], ["R1"]))#150
-# dodajGranu(graf, Grana(R, "R3", [2], [1], ["R3"]))#50
-# dodajGranu(graf, Grana(R, "R4", [2], [3], ["R4"]))#200
-# dodajGranu(graf, Grana(R, "R5", [4], [3], ["R5"]))#50
-# dodajGranu(graf, Grana(R, "R6", [3], [1], ["R6"]))#100
-# dodajGranu(graf, Grana(VCCS, "VCCS1", [2, 1], [4, 1], ["g"]))#1
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.Vg, "V1", [5], [1], ["V1"]))#5
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R1", [5], [2], ["R1"]))#150
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R3", [2], [1], ["R3"]))#50
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R4", [2], [3], ["R4"]))#200
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R5", [4], [3], ["R5"]))#50
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.R, "R6", [3], [1], ["R6"]))#100
+# JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.VCCS, "VCCS1", [2, 1], [4, 1], ["g"]))#1
 
 # dodajGranu(graf, Grana(Vg, "V1", [5], [1], [5.]))#5
 # dodajGranu(graf, Grana(R, "R1", [5], [2], [150.]))#150
@@ -254,21 +257,16 @@ dodajGranu(graf, Grana(R, "R4", [5], [1], ["R4"]))#154
 
 # dumpDot(graf, "test.dot")
 #
-arg = Dict{String, Any}("w" => "w", "replacement" => "10")
+arg = Dict{String, Any}("w" => "", "replacement" => "10")
 rezultat = resiKolo(graf, arg)
-ispisi_rezultate(rezultat)
-using SymbolicUtils
-for (k, v) in rezultat
-	println(k ~ SymbolicUtils.simplify(v))
-end
-# using Latexify
-# for (k, v) in rezultat
-# 	println(latexify(k ~ v))
-# end
+ispisi_jednacine()
+ispisi_jednacine_latex()
+#ispisi_rezultate(rezultat)
+#ispisi_rezultate_latex(rezultat)
+#ispisi_specifican_rezultat_latex(rezultat, "U2")
 #println()
 # ispisi_specifican_rezultat(rezultat, "U2")
+#ispisi_specifikacije_kola(graf)
+ispisi_jednacine_latex()
 
-# TODO
-#NAPRAVITI LEP ISPIS JEDNACINA
-#ZAOKRUZITI VREDNOSTI I OBRISATI -0
-#PROVERITI GRESKE
+end

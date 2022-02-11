@@ -1,19 +1,23 @@
 module JuliaCAP
 
-export Grana, Graf, noviGraf, dodajGranu, resiKolo, ispisi_rezultate, ispisi_specifican_rezultat
+export Grana, Graf, noviGraf, dodajGranu, resiKolo, ispisi_rezultate, ispisi_specifican_rezultat, ispisi_rezultate_latex
+export ispisi_specifican_rezultat_latex, ispisi_specifikacije_kola, ispisi_jednacine, ispisi_jednacine_latex
 export TipGrane, R, Vg, Ig, opAmp, VCVS, VCCS, CCCS, CCVS, L, C, IdealT, InductiveT, ABCD, Z, Y, T
 
 using Symbolics
 using SymbolicUtils
-#using Parameters
+using Latexify
 using Printf
-#using SymPy
-#using DynamicPolynomials
 
 @enum TipGrane R Vg Ig opAmp VCVS VCCS CCCS CCVS L C IdealT InductiveT ABCD Z Y T
 
 #T is transmission line
 j = Symbolics.Sym{Num}(Symbol("j"))
+jednacine = Vector{Equation}();
+simboli_vec = Vector{Symbolics.Sym{Num}}()
+time_domain = false
+smene = Dict()
+
 
 struct Grana
 	tip :: TipGrane
@@ -30,6 +34,8 @@ struct Grana
 	end
 
 end
+
+problem = false
 
 mutable struct Graf
 	jednacine_cvorovi :: Vector{Equation}
@@ -89,6 +95,7 @@ function resiKolo(grf :: Graf, args :: Dict)
 
 	if omega == ""
 		time_domain = false
+		s = Symbolics.Sym{Num}(Symbol("s"))
 	else
 		time_domain = true
 		if omega isa String
@@ -98,10 +105,8 @@ function resiKolo(grf :: Graf, args :: Dict)
 		end
 	end
 	simboli = Set{Symbolics.Sym{Num}}()	#namerno je Set da ne bi ubacio duplikate
-	# smene = Dict{Symbolics.Sym{Num},
-	# 			 SymbolicUtils.Div{Num, Int64, SymbolicUtils.Sym{Num, Nothing}, Nothing}}
-	smene = Dict()
 	id = 1
+
 
 	for g in grf.grane
 		if g.tip == R
@@ -152,6 +157,15 @@ function resiKolo(grf :: Graf, args :: Dict)
 			push!(grf.jednacine_grane, Eq)
 
 		elseif g.tip == Ig
+			U1 = Symbolics.Sym{Num}(Symbol("U" * string(g.cvor1[1])))
+			if g.cvor1[1] != 1
+				push!(simboli, U1)
+			end
+			U2 = Symbolics.Sym{Num}(Symbol("U" * string(g.cvor2[1])))
+			if g.cvor2[1] != 1
+				push!(simboli, U2)
+			end
+
 
 			if g.param isa Vector{String}
 				t[g.cvor1[1]] += Symbolics.Sym{Num}(Symbol(g.param[1]))
@@ -282,6 +296,7 @@ function resiKolo(grf :: Graf, args :: Dict)
 			else
 				push!(smene, G => 1 / g.param[1])
 			end
+
 			#t[g.cvor1[1]] += (U3 - U4) / g.param[1]
 			#t[g.cvor1[2]] -= (U3 - U4) / g.param[1]
 			t[g.cvor1[1]] += I
@@ -303,6 +318,10 @@ function resiKolo(grf :: Graf, args :: Dict)
 				push!(simboli, U2)
 			end
 			#I = 0
+			if isempty(g.struja_napon)
+				push!(g.struja_napon, 0)
+			end
+
 			S1 = Symbolics.Sym{Num}(Symbol("S" * string(id)))
 			id += 1
 			S2 = Symbolics.Sym{Num}(Symbol("S" * string(id)))
@@ -349,10 +368,11 @@ function resiKolo(grf :: Graf, args :: Dict)
 			if g.cvor2[1] != 1
 				push!(simboli, U2)
 			end
-			#U = 0
-			# if (time_domain == false)
-			 	push!(g.struja_napon, 0)
-			# end
+
+			if isempty(g.struja_napon)
+				push!(g.struja_napon, 0)
+			end
+
 			if (g.struja_napon isa Vector{String} && g.param isa Vector{String})
 				par = Symbolics.Sym{Num}(Symbol(g.param[1]))
 				str_nap = Symbolics.Sym{Num}(Symbol(g.struja_napon[1]))
@@ -370,7 +390,9 @@ function resiKolo(grf :: Graf, args :: Dict)
 				t[g.cvor1[1]] += (U1 - U2) * s * g.param[1] - g.struja_napon[1] * g.param[1]
 				t[g.cvor2[1]] += (U2 - U1) * s * g.param[1] + g.struja_napon[1] * g.param[1]
 			end
+
 		elseif g.tip == IdealT
+
 			I1 = Symbolics.Sym{Num}(Symbol("I" * g.ime))
 			push!(simboli, I1)
 			U1 = Symbolics.Sym{Num}(Symbol("U" * string(g.cvor1[1])))
@@ -407,10 +429,14 @@ function resiKolo(grf :: Graf, args :: Dict)
 
 		elseif g.tip == InductiveT
 			# L1, L2, L12, I01, I02
-			# if JuliaCAP.time_domain == false
-			# 	push!(g.struja_napon, 0)
-			# 	push!(g.struja_napon, 0)
-			# end
+			
+			if isempty(g.struja_napon)
+				push!(g.struja_napon, 0)
+				if length(g.struja_napon) == 1
+					push!(g.struja_napon, 0)
+				end
+			end
+
 			I1 = Symbolics.Sym{Num}(Symbol("I" * g.ime * string(g.cvor1[1])))
 			push!(simboli, I1)
 			I2 = Symbolics.Sym{Num}(Symbol("I" * g.ime * string(g.cvor2[1])))
@@ -655,7 +681,7 @@ function resiKolo(grf :: Graf, args :: Dict)
 		grf.jednacine_cvorovi[i] = t[i] ~ 0
 	end
 
-	jednacine = Vector{Equation}();
+	#jednacine = Vector{Equation}();
 
 	# t = Symbolics.Sym{Num}(Symbol("U1")) ~ 0
 	# push!(jednacine, t)
@@ -663,92 +689,104 @@ function resiKolo(grf :: Graf, args :: Dict)
 	append!(jednacine, grf.jednacine_grane)
 	append!(jednacine, grf.jednacine_cvorovi[2:(end)])
 
-	simboli_vec = Vector{Symbolics.Sym{Num}}()
+	#simboli_vec = Vector{Symbolics.Sym{Num}}()
 
 
 	# for i in jednacine
 	# 	println(i)
 	# end
 
-	# for i in jednacine[1:(end - 1)]
-	# 	println(i)
-	# end
-
 	for i in simboli
 		push!(simboli_vec, i)
 	end
-	#samo ispis
+
+
 	U1 = Symbolics.Sym{Symbolics.Num}(Symbol("U1"))
 	for (i, val) in enumerate(jednacine)
 		jednacine[i] = Symbolics.Equation(Symbolics.substitute(val.lhs, Dict([U1 => 0])),
 										  Symbolics.substitute(val.rhs, Dict([U1 => 0])))
 		#jednacine[i] = Symbolics.simplify(jednacine[i], expand=true)
 	end
-
-	for i in jednacine[1:(end)]
-		println(Symbolics.substitute(i, smene))
-		#println(i)
-	end
-
-	print("Simboli: ")
-	for i in simboli
-	 	print(i, " ")
-	end
-	println()
-
-
-
-	# TODO: Да ли треба if - else
-	# if omega == ""
-	# 	res = Symbolics.solve_for(jednacine, simboli_vec, simplify = true)
-	# 	for (i, val) in enumerate(res)
-	# 		res[i] = Symbolics.simplify(Symbolics.substitute(val, smene), expand=true)
-	# 	end
-	# else
-		#try
-			res2 = Vector{Any}()
-			res = Symbolics.solve_for(jednacine, simboli_vec)
-			for i in res
-				push!(res2, i)
-			end
-
-			#println(res)
-		#catch
-			#println(smene)
-			#println("Too complicated")
-		 for (i, val) in enumerate(res2)
-			#SymPy.simplify(res[i]);
-
-			#res2[i] = Symbolics.substitute(val, smene)
-		 	#res[i] = Symbolics.simplify(val)
-			res2[i] = Symbolics.substitute(val, smene)
-
-		 end
-		#println("Stigao do ovde")
-	#end
-	# for j in res
-	# 	j = round(j, digits=3)
-	# end
-	# println("Ponovo ispisi jednacine")
-	# for i in jednacine[1:(end)]
-	# 	println(i)
-	# end
-
+	
+	res2 = Vector{Any}()
 	ret = Vector{Tuple{Symbolics.Sym{Num}, Num}}()
+
+	a, b = Symbolics.linear_expansion(jednacine, simboli_vec)
+
+	if isempty(a)
+		println("Resenje ne postoji!")
+		return ret
+	end
+
+	D = Symbolics.det(a)
+
+	if isequal(D, 0)
+		println("Resenje ne postoji!") 
+		return ret
+	end
+	
+	# for i in jednacine[1:(end)]
+	# 	println(Symbolics.substitute(i, smene))
+	# 	#println(i)
+	# end
+
+	# print("Simboli: ")
+	# for i in simboli
+	#  	print(i, " ")
+	# end
+	# println()
+
+	res = Symbolics.solve_for(jednacine, simboli_vec)
+	if isempty(res) 
+		problem = true
+	end
+
+	for i in res
+		push!(res2, i)
+	end
+
+	for (i, val) in enumerate(res2)
+		#SymPy.simplify(res[i]);
+
+		#res2[i] = Symbolics.substitute(val, smene)
+		#res[i] = Symbolics.simplify(val)
+		res2[i] = Symbolics.substitute(val, smene)
+
+	end
+
 	for i in zip(simboli_vec, res2)
 		push!(ret, i)
 	end
 
 	return ret
 
+end
 
+function ispisi_jednacine()
+	for i in jednacine
+		println(Symbolics.substitute(i, smene))
+	end
+end
+
+function ispisi_jednacine_latex()
+	for i in jednacine
+		println(latexify(Symbolics.substitute(i, smene)))
+	end
 end
 
 function ispisi_rezultate(rez)
 	for i in rez
-		#Symbolics.simplify_fractions(i)
+		if problem
+			println("Resenje ne postoji!")
+		end
 		@printf("%s = %s\n", i[1], i[2])
 		#display(i)
+	end
+end
+
+function ispisi_rezultate_latex(rez)
+	for (k, v) in rez
+		println(latexify(k ~ v))
 	end
 end
 
@@ -757,6 +795,38 @@ function ispisi_specifican_rezultat(rez, par)
 		if par == string(i[1])
 			@printf("%s = %s\n", i[1], i[2])
 		end
+	end
+end
+
+function ispisi_specifican_rezultat_latex(rez, par)
+	for (k,v) in rez
+		if par == string(k)
+			println(latexify(k ~ v))
+		end
+	end
+end
+
+function ispisi_specifikacije_kola(graf1)
+	println("Specifikacije kola: ")
+	println("Broj cvorova: ", graf1.max_cvor)
+	print("Uneti elementi: ")
+	for i in graf1.grane
+		print(i.tip, " ")
+	end
+	println()
+	#println("Replacement rule: ",self.replacement_rule)
+	println("Jednacine: ")
+	for i in jednacine
+		println(i)
+	end
+	println("Varijable: ")
+	for i in simboli_vec
+		print(i, " ")
+	end
+	println()
+	if time_domain
+		print("Frekvencija: ")
+		println(-s)
 	end
 end
 
