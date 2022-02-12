@@ -257,8 +257,7 @@ graf = noviGraf()
 
 # dumpDot(graf, "test.dot")
 #
-arg = Dict{String, Any}("w" => "", "replacement" => "10")
-rezultat = resiKolo(graf, arg)
+rezultat = resiKolo(graf; omega = "w")
 ispisi_jednacine()
 ispisi_jednacine_latex()
 #ispisi_rezultate(rezultat)

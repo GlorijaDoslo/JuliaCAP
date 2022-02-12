@@ -74,24 +74,13 @@ function dumpDot(grf :: Graf, fajl :: String)
 	end
 end
 
-function resiKolo(grf :: Graf, args :: Dict)
+function resiKolo(grf :: Graf; omega = "") # TODO Da li nam treba replacement ovde pošto se nigde ne koristi
 	grf.jednacine_cvorovi = Vector{Equation}(undef, grf.max_cvor)
 	t = Vector{Num}(undef, grf.max_cvor)
 	for i in 1:length(t)
 		t[i] = 0
 	end
 	grf.jednacine_grane = Vector{Equation}()
-
-	######### Reading omega and replacement ##########
-	omega = ""
-	for a in keys(args)	#lista kljuceva
-		if a == "w" || a == "omega"
-			omega = args[a]
-		end
-		if a == "replacement" || a == "r"
-			replacement_rule = args[a]
-		end
-	end
 
 	if omega == ""
 		time_domain = false
@@ -429,7 +418,7 @@ function resiKolo(grf :: Graf, args :: Dict)
 
 		elseif g.tip == InductiveT
 			# L1, L2, L12, I01, I02
-			
+
 			if isempty(g.struja_napon)
 				push!(g.struja_napon, 0)
 				if length(g.struja_napon) == 1
@@ -707,7 +696,7 @@ function resiKolo(grf :: Graf, args :: Dict)
 										  Symbolics.substitute(val.rhs, Dict([U1 => 0])))
 		#jednacine[i] = Symbolics.simplify(jednacine[i], expand=true)
 	end
-	
+
 	res2 = Vector{Any}()
 	ret = Vector{Tuple{Symbolics.Sym{Num}, Num}}()
 
@@ -721,10 +710,10 @@ function resiKolo(grf :: Graf, args :: Dict)
 	D = Symbolics.det(a)
 
 	if isequal(D, 0)
-		println("Resenje ne postoji!") 
+		println("Resenje ne postoji!")
 		return ret
 	end
-	
+
 	# for i in jednacine[1:(end)]
 	# 	println(Symbolics.substitute(i, smene))
 	# 	#println(i)
@@ -737,7 +726,7 @@ function resiKolo(grf :: Graf, args :: Dict)
 	# println()
 
 	res = Symbolics.solve_for(jednacine, simboli_vec)
-	if isempty(res) 
+	if isempty(res)
 		problem = true
 	end
 
