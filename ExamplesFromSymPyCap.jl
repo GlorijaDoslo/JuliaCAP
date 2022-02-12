@@ -138,8 +138,7 @@ graf = JuliaCAP.noviGraf()
 #Example17.2 - prazni simboli, ne baca exception al ne nema resenje
 # JuliaCAP.dodajGranu(graf, JuliaCAP.Grana(JuliaCAP.L, "L1", [1], [1], ["L1"], ["IL0"]))
 
-arg = Dict{String, Any}("w" => "", "replacement" => "10")
-rezultat = JuliaCAP.resiKolo(graf, arg)
+rezultat = JuliaCAP.resiKolo(graf, omega = "w")
 JuliaCAP.ispisi_jednacine()
 JuliaCAP.ispisi_jednacine_latex()
 #JuliaCAP.ispisi_rezultate(rezultat)
