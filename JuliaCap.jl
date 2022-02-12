@@ -74,24 +74,13 @@ function dumpDot(grf :: Graf, fajl :: String)
 	end
 end
 
-function resiKolo(grf :: Graf, args :: Dict)
+function resiKolo(grf :: Graf; omega = "") # TODO Da li nam treba replacement ovde pošto se nigde ne koristi
 	grf.jednacine_cvorovi = Vector{Equation}(undef, grf.max_cvor)
 	t = Vector{Num}(undef, grf.max_cvor)
 	for i in 1:length(t)
 		t[i] = 0
 	end
 	grf.jednacine_grane = Vector{Equation}()
-
-	######### Reading omega and replacement ##########
-	omega = ""
-	for a in keys(args)	#lista kljuceva
-		if a == "w" || a == "omega"
-			omega = args[a]
-		end
-		if a == "replacement" || a == "r"
-			replacement_rule = args[a]
-		end
-	end
 
 	if omega == ""
 		time_domain = false
