@@ -2,6 +2,15 @@
 JuliaCAP is software for symbolic analysis of linear time-invariant electric
 circuits.
 
+## Installation
+
+The project is written entirely in Julia, so Julia is necessary.
+If this requirement is met, you can clone this repository and install the package using:
+
+```
+$ git clone https://github.com/GlorijaDoslo/JuliaCAP
+```
+For using this software we recommend Visual Studio Code and Jupyter Notebook
 
 ## Authors
 Developed by the following team from [University of Belgrade – School of
