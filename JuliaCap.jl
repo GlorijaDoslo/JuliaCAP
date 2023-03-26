@@ -14,10 +14,9 @@ using Printf
 #T is transmission line
 j = Symbolics.Sym{Num}(Symbol("j"))
 equations = Vector{Equation}();
-symbolsVect = Vector{Symbolics.Sym{Num}}()
+symbolsVect = Vector{Symbolics.BasicSymbolic{Num}}()
 timeDomain = false
 shifts = Dict()
-
 
 struct Edge
 	type :: TypeOfEdge
@@ -104,7 +103,7 @@ function solveCircuit(graph :: Graph, args :: Dict)
 			s = j * omega
 		end
 	end
-	symbols = Set{Symbolics.Sym{Num}}()	# its type is Set because we don't want duplicates
+	symbols = Set{Symbolics.BasicSymbolic{Num}}()	# its type is Set because we don't want duplicates
 	id = 1
 
 
@@ -148,7 +147,7 @@ function solveCircuit(graph :: Graph, args :: Dict)
 			t[g.node1[1]] += Iug
 			t[g.node2[1]] -= Iug
 
-			#provera da li je simbol ili broj
+			#check if it is symbol or number
 			if g.param isa Vector{String}
 				Eq = U1 - U2 ~ Symbolics.Sym{Num}(Symbol(g.param[1]))
 			else
@@ -702,15 +701,15 @@ function solveCircuit(graph :: Graph, args :: Dict)
 	end
 
 
-	U1 = Symbolics.Sym{Symbolics.Num}(Symbol("U1"))
+	U1 = Symbolics.Sym{Num}(Symbol("U1"))
 	for (i, val) in enumerate(equations)
 		equations[i] = Symbolics.Equation(Symbolics.substitute(val.lhs, Dict([U1 => 0])),
 										  Symbolics.substitute(val.rhs, Dict([U1 => 0])))
-		# equations[i] = Symbolics.simplify(equations[i], expand=true)
+		equations[i] = Symbolics.simplify(equations[i], expand=true)
 	end
 	
 	res2 = Vector{Any}()
-	ret = Vector{Tuple{Symbolics.Sym{Num}, Num}}()
+	ret = Vector{Tuple{Symbolics.BasicSymbolic{Num}, Num}}()
 
 	a, b = Symbolics.linear_expansion(equations, symbolsVect)
 
@@ -738,7 +737,7 @@ function solveCircuit(graph :: Graph, args :: Dict)
 	# println()
 
 	res = Symbolics.solve_for(equations, symbolsVect)
-	#res = Symbolics.simplify(res)
+	res = Symbolics.simplify(res)
 	if isempty(res) 
 		problem = true
 	end
@@ -753,9 +752,8 @@ function solveCircuit(graph :: Graph, args :: Dict)
 		#res2[i] = Symbolics.substitute(val, shifts)
 		#res[i] = Symbolics.simplify(val)
 		res2[i] = Symbolics.substitute(val, shifts)
-
 	end
-
+	res2 = Symbolics.simplify(res2)
 	for i in zip(symbolsVect, res2)
 		push!(ret, i)
 	end
@@ -781,14 +779,23 @@ function printResults(res)
 		if problem
 			println("Solution doesn't exists!")
 		end
-		@printf("%s = %s\n", i[1], i[2])
+
+		if !((i[2] == Symbolics.Num(-0.0)) isa Symbolics.Num)
+			@printf("%s = %s\n", i[1], 0)
+		else
+			@printf("%s = %s\n", i[1], i[2])
+		end
 		#display(i)
 	end
 end
 
 function printLatexResults(res)
 	for (k, v) in res
-		println(latexify(k ~ v))
+		if !((v == Symbolics.Num(-0.0)) isa Symbolics.Num)
+			println(latexify(k ~ 0))
+		else
+			println(latexify(k ~ v))
+		end
 	end
 end
 
